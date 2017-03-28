@@ -8,7 +8,7 @@ import subprocess
 import sys
 import re
 
-FILE_PATHS = ["/home/mark/classes/Sp17/", "-Spring-2017/notes/"]
+FILE_PATHS = ["/home/mark/classes/", "-Spring-2017/notes/"]
 DEST_PATH = "/home/mark/Desktop/Notetaking/"
 EXTRACT_DIGITS_RE = re.compile(r"\d+")
 DATE_FROM_TEX_RE = re.compile("\\lec\{(\d+)/(\d+)\}")
@@ -44,8 +44,9 @@ def get_number_in_string(string, default=-1):
 
 class Course:
 
-    def __init__(self, class_name, class_schedule, subject, course_number, moodle_id):
-        self.directory = "".join([FILE_PATHS[0], class_name, FILE_PATHS[1]])
+    def __init__(self, class_name, class_schedule, subject, term, course_number, moodle_id):
+        self.directory = "".join(
+            [FILE_PATHS[0], "/", term, "/", class_name, FILE_PATHS[1]])
         self.class_schedule = class_schedule
         self.subject = subject
         self.course_number = str(course_number)
@@ -122,5 +123,5 @@ class Course:
 
 
 if __name__ == "__main__":
-    crypto = Course("cryptography", "MWF", "MATH", 388, 51406)
+    crypto = Course("cryptography", "MWF", "MATH", "Sp17", 388, 51406)
     crypto.upload_notes()

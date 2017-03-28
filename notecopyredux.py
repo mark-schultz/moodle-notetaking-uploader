@@ -6,9 +6,12 @@ import webbrowser
 import atexit
 import subprocess
 import sys
+import re
 
 FILE_PATHS = ["/home/mark/classes/Sp17/", "-Spring-2017/notes/"]
 DEST_PATH = "/home/mark/Desktop/Notetaking/"
+EXTRACT_DIGITS_RE = re.compile(r"\d+")
+DATE_FROM_TEX_RE = re.compile("\\lec\{(\d+)/(\d+)\}")
 
 
 def find_ext(dr, ext):
@@ -25,18 +28,18 @@ def move_renamed_file(old_file_path, new_file_path):
     shutil.move(old_file_path, new_file_path)
 
 
-def get_number_in_string(string):
+def get_number_in_string(string, default=-1):
     """
     Given a string that contains a number, returns that number.
 
     String expected to be of the form <word>XY.pdf, where <word> contains no numbers.
 
-    Try/except hacking needed for if the string doesn't contain a number to stop int("") error.
     """
-    try:
-        return int(''.join(list(filter(str.isdigit, string))))
-    except ValueError:
-        return 0
+    find = EXTRACT_DIGITS_RE.search(string)
+    if find is None:
+        return default
+    else:
+        return int(find.group())
 
 
 class Course:
@@ -48,14 +51,14 @@ class Course:
         self.course_number = str(course_number)
         self.moodle_id = str(moodle_id)
 
-    def make_new_name(self):
+    def make_new_name(self, date=None):
         """
         Makes a new name of form SUBJ NUM MM-DD-YYYY.pdf, where SUBJ is the department the class is in (i.e. MATH), NUM is the three-digit class number, and MM-DD-YYYY is the most recent date.
-
-        Idea to improve - make MM-DD-YYYY the most recent date from the class_schedule.
         """
-        date = time.strftime("%x").lstrip("0").replace("/", "-")
-        return "".join([self.subject, " ", self.course_number, " ", date, ".pdf"])
+        if date is None:
+            date = time.strftime("%x")
+        formatted_date = date.lstrip("0").replace("/", "-")
+        return "".join([self.subject, " ", self.course_number, " ", formatted_date, ".pdf"])
 
     def find_highest_pdf(self):
         """
@@ -69,11 +72,28 @@ class Course:
         self.target_pdf = pdfs[-1]
         return "".join([self.directory, self.target_pdf])
 
-    def move_file(self, file_name):
+    def find_tex_from_pdf(self, pdf_directory):
+        """
+        Given a file-path to a .pdf file, returns the .tex file corresponding to it.
+        """
+        return pdf_directory.split('.')[0] + '.tex'
+
+    def get_date_from_tex(self, tex):
+        """
+        Given a file-path to a .tex file, opens it and looks for \lec{A/BC}, which is the date it was written.
+
+        Returns MM/DD/YYYY
+        """
+        with open(tex, 'r') as f:
+            string = f.read()
+        date = DATE_FROM_TEX_RE.search(string).groups()
+        return "/".join([date[0].zfill(2), date[1], time.strftime("%Y")])
+
+    def move_file(self, file_name, date):
         """
         Takes a file, renames it, and moves it to the "staging" folder.
         """
-        new_file_name = self.make_new_name()
+        new_file_name = self.make_new_name(date)
         dest = os.path.join(DEST_PATH, new_file_name)
         shutil.copy(file_name, dest)
 
@@ -90,8 +110,10 @@ class Course:
         Runs all the prior functions in the right order.
         """
         pdf = self.find_highest_pdf()
-        new_file_name = self.make_new_name()
-        self.move_file(pdf)
+        tex = self.find_tex_from_pdf(pdf)
+        date = self.get_date_from_tex(tex)
+        new_file_name = self.make_new_name(date)
+        self.move_file(pdf, date)
         self.open_browser()
         atexit.register(move_renamed_file, "".join([DEST_PATH, new_file_name]), "".join(
             [DEST_PATH, self.course_number, " archive/", new_file_name]))

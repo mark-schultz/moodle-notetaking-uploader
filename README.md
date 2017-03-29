@@ -14,3 +14,5 @@ The script will:
 4. Upon entering any input on the terminal, it will move the "staged" file to an archive subfolder of the staging directory.
 
 A lot of the things here (where the recent .pdf's are stored, where the staging directory is, the correct webpage is) is hard-coded.  Nevertheless, it allows uploading my notes to be a ~10 second process.
+
+This requires a 'credentials.py' file.  Rename 'credentials_ex.py', and input your username and password.

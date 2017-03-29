@@ -10,6 +10,7 @@ import re
 
 FILE_PATHS = ["/home/mark/classes/", "-Spring-2017/notes/"]
 DEST_PATH = "/home/mark/Desktop/Notetaking/"
+MOODLE_BASE_URL = "https://moodle.reed.edu/mod/data/edit.php?d="
 EXTRACT_DIGITS_RE = re.compile(r"\d+")
 DATE_FROM_TEX_RE = re.compile("\\lec\{(\d+)/(\d+)\}")
 
@@ -44,10 +45,9 @@ def get_number_in_string(string, default=-1):
 
 class Course:
 
-    def __init__(self, class_name, class_schedule, subject, term, course_number, moodle_id):
+    def __init__(self, class_name, subject, term, course_number, moodle_id):
         self.directory = "".join(
             [FILE_PATHS[0], "/", term, "/", class_name, FILE_PATHS[1]])
-        self.class_schedule = class_schedule
         self.subject = subject
         self.course_number = str(course_number)
         self.moodle_id = str(moodle_id)
@@ -103,7 +103,7 @@ class Course:
         Opens the webpage and "staging" folder to allow drag and drop of the .pdf to the website.
         """
         webbrowser.open_new(
-            "".join(["https://moodle.reed.edu/mod/data/view.php?id=", self.moodle_id]))
+            "".join([MOODLE_BASE_URL, self.moodle_id]))
         subprocess.Popen(["xdg-open", DEST_PATH])
 
     def upload_notes(self):
@@ -123,5 +123,5 @@ class Course:
 
 
 if __name__ == "__main__":
-    crypto = Course("cryptography", "MWF", "MATH", "Sp17", 388, 51406)
+    crypto = Course("cryptography",  "MATH", "Sp17", 388, 485)
     crypto.upload_notes()

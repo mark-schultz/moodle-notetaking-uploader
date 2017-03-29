@@ -1,9 +1,9 @@
 import requests
 import http.client
+from credentials import CREDENTIALS
 http.client.HTTPConnection._http_vsn_str = 'HTTP/1.0'
 
 AUTHOR = "Mark Schultz"
-CREDENTIALS = {'login': 'schultzm', 'password': '0ZsRPH0K7mEo'}
 LOGIN_URL = 'https://weblogin.reed.edu/'
 SUBMIT_URL = 'https://moodle.reed.edu/mod/data/edit.php?d=485'
 submit_url = 'https://moodle.reed.edu/repository/repository_ajax.php?action=upload'
